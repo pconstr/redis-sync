@@ -1,0 +1,55 @@
+lpush l1 "aha"
+lpush l1 "yup"
+
+rpush l2 "something"
+rpush l2 "now a bit longer and perhaps more interesting"
+
+rpush l3 "this one is going to be longer -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+rpush l3 "a bit more"
+
+rpush l4 a
+rpush l4 b
+rpush l4 c
+rpush l4 d
+rpush l4 e
+
+lpop l4
+rpop l4
+
+
+rpush l5 a
+rpushx l5 b
+lpushx l5 c
+lrem l5 0 b
+
+rpush l6 a
+rpush l6 c
+linsert l6 AFTER a b
+ltrim l6 1 1
+
+rpush l7 a
+rpush l7 b
+rpush l7 c
+
+brpoplpush l7 l8 10
+
+rpush l8 1
+rpush l8 2
+rpush l8 3
+rpush l8 4
+
+rpush l9 10001
+rpush l9 10002
+rpush l9 10003
+rpush l9 10004
+
+rpush l10 100001
+rpush l10 100002
+rpush l10 100003
+rpush l10 100004
+
+rpush l11 9999999999
+rpush l11 9999999998
+rpush l11 9999999997
+
+sort l11 STORE l12

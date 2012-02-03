@@ -1,0 +1,67 @@
+append s1 ""
+append s1 "."
+append s1 "aha"
+append s1 "a bit longer and with spaces"
+append s1 "longer than 256 characters and trivially compressible --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+decr n1
+decrby n1 5
+
+incr n2
+incrby n2 500
+
+incr n3
+incrby n3 500000
+
+mset n4 1 n5 1000 n6 1000000
+
+msetnx n4b 1 n5b 1000 n6b 1000000
+
+setbit b1 0 1
+setbit b1 1 1
+setbit b1 2 1
+setbit b1 3 1
+setbit b1 4 1
+setbit b1 5 1
+setbit b1 6 1
+setbit b1 7 1
+
+setbit b2 8 1
+setbit b2 9 1
+setbit b2 10 1
+setbit b2 11 1
+setbit b2 12 1
+setbit b2 13 1
+setbit b2 14 1
+setbit b2 15 1
+
+setbit b3 16 1
+setbit b3 17 1
+setbit b3 18 1
+setbit b3 19 1
+setbit b3 20 1
+setbit b3 21 1
+setbit b3 22 1
+setbit b3 23 1
+
+setbit b4 24 1
+setbit b4 25 1
+setbit b4 26 1
+setbit b4 27 1
+setbit b4 28 1
+setbit b4 29 1
+setbit b4 30 1
+setbit b4 31 1
+
+setbit b5 32 1
+setbit b5 33 1
+setbit b5 34 1
+setbit b5 35 1
+setbit b5 36 1
+setbit b5 37 1
+setbit b5 38 1
+setbit b5 39 1
+
+setnx s2 "now exists"
+
+setrange s2 3 "_"

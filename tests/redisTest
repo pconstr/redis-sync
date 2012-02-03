@@ -1,0 +1,34 @@
+#!/bin/bash
+
+killall redis-server
+rm dump.rdb
+
+redis-server &
+
+sleep 1
+
+./tests/test.js >tests/test.out&
+
+sleep 1
+
+redis-cli -x <./tests/stringCommands.txt
+redis-cli -x <./tests/hashCommands.txt
+redis-cli -x <./tests/listCommands.txt
+redis-cli -x <./tests/setCommands.txt
+redis-cli -x <./tests/zsetCommands.txt
+redis-cli -x <./tests/keyCommands.txt
+
+sleep 1
+
+kill %2
+
+sleep 1
+
+./tests/test.js >tests/test2.out&
+
+sleep 1
+
+kill %3
+kill %1
+
+

@@ -1,0 +1,12 @@
+sadd set1 a b c d
+
+sadd set2 a b c d
+smove set2 set3 b
+
+srem set2 c
+
+sadd set4 1 2 3 4 5 6 7 8 9 10
+
+sadd set5 100000 100001 100002 100003
+
+sadd set6 9999999999 9999999998 9999999997

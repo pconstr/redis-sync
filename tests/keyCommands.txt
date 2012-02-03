@@ -1,0 +1,3 @@
+set k1 ssssssss
+set k2 wwwwwwww
+rename k2 k3
