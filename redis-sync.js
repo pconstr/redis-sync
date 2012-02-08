@@ -93,7 +93,7 @@ function Sync(parseRDB) {
         if(parseRDB) {
           startReadingBytes(bulkReplyLen, false, function(buf) { that.rdb.write(buf); }, function() { that.rdb.end(); readRDB = true; state = 'ready';});
         } else {
-          startReadingBytes(bulkReplyLen, true, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; state = 'ready';});
+          startReadingBytes(bulkReplyLen, false, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; state = 'ready';});
         }
       }
       break;
