@@ -1,6 +1,6 @@
 {
   "name": "redis-sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "keywords": ["redis", "slave", "replication", "sync"],
   "homepage": "https://github.com/pconstr/redis-sync",
   "description": "redis replication slave",
