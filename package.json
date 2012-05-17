@@ -22,6 +22,18 @@
     }
   ],
   "bugs" : { "url" : "https://github.com/pconstr/redis-sync/issues" },
+  "contributors": [
+    {
+      "name": "Carlos Guerreiro",
+      "email": "carlos@perceptiveconstructs.com",
+      "web": "http://perceptiveconstructs.com"
+    },
+    {
+      "name": "Carlos Guerreiro",
+      "email": "cguerreiro@igalia.com",
+      "web": "http://igalia.com"
+    }
+  ],
   "scripts": {
     "test": "./tests/redisTest"
   }
