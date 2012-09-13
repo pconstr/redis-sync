@@ -74,6 +74,9 @@ function Sync(parseRDB) {
         ++i;
         bulkReplyLen = 0;
         break;
+      } else if(data[i] === 10) { // redis sometimes writes a LF at the beginning of reply to SYNC
+        ++i;
+        state = 'ready';
       } else {
         state = 'inline';
         inlineCommandBuffers = [];
