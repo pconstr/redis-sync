@@ -93,7 +93,7 @@ function Sync(parseRDB) {
     case 'bulkReplyLenR':
       if(data[i] === 10) { // \n
         ++i;
-        if(parseRDB) {
+        if(parseRDB && !readRDB) {
           startReadingBytes(bulkReplyLen, false, function(buf) { that.rdb.write(buf); }, function() { that.rdb.end(); readRDB = true; state = 'ready';});
         } else {
           startReadingBytes(bulkReplyLen, false, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; state = 'ready';});
