@@ -13,7 +13,7 @@ var rdb = require('rdb-parser');
 var util = require('util');
 
 function Sync(parseRDB) {
-  var state = 'ready';
+  var state;
   var data, i;
   var unifiedNArg;
   var unifiedArgLen;
@@ -27,7 +27,12 @@ function Sync(parseRDB) {
   var bytesExpectingTail;
   var bytesCBData;
   var bytesCBEnd;
-  var readRDB = false;
+  var readRDB;
+  var client;
+  var port, host;
+  var retryDelay;
+  var initialRetryDelay = 250;
+  var retryBackoff = 1.7;
 
   var that = this;
 
@@ -94,9 +99,9 @@ function Sync(parseRDB) {
       if(data[i] === 10) { // \n
         ++i;
         if(parseRDB && !readRDB) {
-          startReadingBytes(bulkReplyLen, false, function(buf) { that.rdb.write(buf); }, function() { that.rdb.end(); readRDB = true; state = 'ready';});
+          startReadingBytes(bulkReplyLen, false, function(buf) { that.rdb.write(buf); }, function() { that.rdb.end(); readRDB = true; connectedOK(); state = 'ready';});
         } else {
-          startReadingBytes(bulkReplyLen, false, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; state = 'ready';});
+          startReadingBytes(bulkReplyLen, false, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; connectedOK(); state = 'ready';});
         }
       }
       break;
@@ -209,9 +214,14 @@ function Sync(parseRDB) {
       break;
     case 'inlineR':
       if(data[i] === 10) { // \n
-        that.emit('inlineCommand', inlineCommandBuffers);
-        state = 'ready';
-        ++i;
+        // check 1st char for error
+        state = 'ready'; ++i;
+        if(inlineCommandBuffers.length > 0 && inlineCommandBuffers[0][0] === '-'.charCodeAt(0)) {
+          // retry sync after a while
+          reconnect();
+        } else {
+          that.emit('inlineCommand', inlineCommandBuffers);
+        }
       } else {
         throw 'parsing error: expected LF after CR at the end of inline command';
       }
@@ -232,11 +242,12 @@ function Sync(parseRDB) {
   if(parseRDB)
     that.rdb = new rdb.Parser();
 
-  that.connect = function(port, host) {
-    if (port === undefined) {
-      port = 6379;
-    }
-    var client = net.connect(port, host);
+  function tryConnect() {
+    console.error('tryConnect');
+    var connId = Math.random();
+    state = 'ready';
+    readRDB = false;
+    client = net.connect(port, host);
     client.on('connect', function(a) {
       client.write('sync\r\n');
     });
@@ -245,11 +256,34 @@ function Sync(parseRDB) {
       parse(data);
     });
     client.on('error', function(err) {
-      error(err);
+      reconnect();
     });
     client.on('end', function() {
-      that.emit('end');
+      reconnect();
     });
+  }
+
+  function reconnect() {
+    if(client) {
+      client.removeAllListeners();
+      client.destroy();
+      client = undefined;
+    }
+    setTimeout(tryConnect, retryDelay);
+    retryDelay = retryDelay * retryBackoff;
+  }
+
+  function connectedOK() {
+    retryDelay = initialRetryDelay;
+  }
+
+  that.connect = function(p, h) {
+    port = p; host = h;
+    retryDelay = initialRetryDelay;
+    if (port === undefined) {
+      port = 6379;
+    }
+    tryConnect();
   };
 }
 
