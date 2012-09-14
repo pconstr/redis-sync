@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 
 /*jslint white: true, browser: true, plusplus: true, vars: true, nomen: true, bitwise: true*/
 
