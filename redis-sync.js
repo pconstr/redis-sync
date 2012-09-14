@@ -198,7 +198,8 @@ function Sync(parseRDB) {
       break;
     case 'inline':
       skipToCR();
-      inlineCommandBuffers.push(data.slice(inlineCommandStart, i));
+      if(i != inlineCommandStart)
+        inlineCommandBuffers.push(data.slice(inlineCommandStart, i));
       if(i === data.length) {
         inlineCommandStart = 0;
       } else {
