@@ -5,6 +5,7 @@ A [node.js](http://nodejs.org/) [redis](http://redis.io) [replication](http://re
 
 `redis-sync` implements the replication slave side of the `SYNC` command, streaming in all commands that modify the dataset.
 It can also use [rdb-parser](https://github.com/pconstr/rdb-parser) to parse the dataset dump that precedes the commands.
+If it can't connect, gets disconnected or if redis is still loading the dataset, `redis-sync` will keep trying to reconnect - with exponential backoff.
 
 Installation
 ------------
@@ -28,34 +29,41 @@ sync.on('inlineCommand', function(buffers) {
 });
 
 sync.on('error', function(err) {
+  // listen to 'error' and rely on reconnection logic - otherwise it will get thrown
   console.error(err);
-});
-
-sync.on('end', function() {
-  console.log('end');
 });
 
 sync.connect();
 ```
 
 Upon connection, the master will transfer the entire database in RDB format, before sending any commands.
-`redis-sync` will use [rdb-parser](https://github.com/pconstr/rdb-parser) to parse it as it streams in, if you pass `true` to `Sync`
+`redis-sync` can use [rdb-parser](https://github.com/pconstr/rdb-parser) to parse it as it streams in.
+
+You can listen to `entity` events on the `sync` object:
 
 ```javascript
-var redisSync = require('redis-sync');
-var sync = new redisSync.Sync(true);
-
-sync.rdb.on('entity', function(e) {
+sync.on('entity', function(e) {
   console.log(e);
 });
-sync.rdb.on('error', function(err) {
-  console.error(err);
-});
-sync.rdb.on('end', function() {
-  console.log('end of rdb');
-});
-
 ```
+
+or obtain the entity stream as it starts coming in
+
+```javascript
+sync.on('rdb', function(rdb) {
+  rdb.on('entity', function(e) {
+    console.log(e);
+  });
+  rdb.on('error', function(err) {
+    // listen to 'error' and rely on reconnection logic - otherwise it will get thrown
+    console.error(err);
+  });
+  rdb.on('end', function() {
+    console.log('end of rdb');
+  });
+```
+
+Note that in case of reconnection redis will send the database again, emitting 'rdb' and 'entity' events again on the same `sync` object.
 
 License
 -------

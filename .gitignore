@@ -4,3 +4,4 @@ node_modules
 dump.rdb
 tests/test.out
 tests/test2.out
+tests/redis.out

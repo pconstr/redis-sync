@@ -1,34 +1,24 @@
 #!/bin/bash
 
-killall redis-server
+# kill any leftover redis server
+killall redis-server >/dev/null 2>&1
+sleep 1
 rm dump.rdb
 
-redis-server &
+# start redis server
+redis-server >./tests/redis.out&
 
-sleep 1
+sleep 3
 
-./tests/test.js >tests/test.out&
+# fill in with data
+redis-cli -x <./tests/stringCommands.txt >/dev/null
+redis-cli -x <./tests/hashCommands.txt >/dev/null
+redis-cli -x <./tests/listCommands.txt >/dev/null
+redis-cli -x <./tests/setCommands.txt >/dev/null
+redis-cli -x <./tests/zsetCommands.txt >/dev/null
+redis-cli -x <./tests/keyCommands.txt >/dev/null
 
-sleep 1
+# run test
+./tests/test.js
 
-redis-cli -x <./tests/stringCommands.txt
-redis-cli -x <./tests/hashCommands.txt
-redis-cli -x <./tests/listCommands.txt
-redis-cli -x <./tests/setCommands.txt
-redis-cli -x <./tests/zsetCommands.txt
-redis-cli -x <./tests/keyCommands.txt
-
-sleep 1
-
-kill %2
-
-sleep 1
-
-./tests/test.js >tests/test2.out&
-
-sleep 1
-
-kill %3
-kill %1
-
-
+killall redis-server

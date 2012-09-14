@@ -12,7 +12,7 @@ var net = require('net');
 var rdb = require('rdb-parser');
 var util = require('util');
 
-function Sync(parseRDB) {
+function Sync() {
   var state;
   var data, i;
   var unifiedNArg;
@@ -30,6 +30,7 @@ function Sync(parseRDB) {
   var readRDB;
   var client;
   var port, host;
+  var rdbParser;
   var retryDelay;
   var initialRetryDelay = 250;
   var retryBackoff = 1.7;
@@ -60,10 +61,15 @@ function Sync(parseRDB) {
 
   function error(err) {
     if(state !== 'error') {
+      if(rdbParser) {
+        rdbParser.emit('error', err);
+      }
       that.emit('error', err);
       state = 'error';
     }
   }
+
+  var breakCount = 0;
 
   function parseBuffer() {
     switch (state) {
@@ -98,8 +104,22 @@ function Sync(parseRDB) {
     case 'bulkReplyLenR':
       if(data[i] === 10) { // \n
         ++i;
-        if(parseRDB && !readRDB) {
-          startReadingBytes(bulkReplyLen, false, function(buf) { that.rdb.write(buf); }, function() { that.rdb.end(); readRDB = true; connectedOK(); state = 'ready';});
+        if((that.listeners('entity').length > 0 || that.listeners('rdb').length > 0) && !readRDB) {
+          if(!rdbParser) {
+            rdbParser = new rdb.Parser();
+            rdbParser.on('entity', function(e) {
+              that.emit('entity', e);
+            });
+            if(that.listeners('rdb').length === 0) {
+              rdbParser.on('error', function(err) {
+                // stream is used internally, error handling is done at the outer level
+              });
+            }
+          }
+          that.emit('rdb', rdbParser);
+          startReadingBytes(bulkReplyLen, false,
+                            function(buf) { rdbParser.write(buf); },
+                            function() { rdbParser.end(); readRDB = true; rdbParser = undefined; connectedOK(); state = 'ready';});
         } else {
           startReadingBytes(bulkReplyLen, false, function(buf) { that.emit('bulkReplyData', buf); } , function() { that.emit('bulkReplyEnd'); readRDB = true; connectedOK(); state = 'ready';});
         }
@@ -218,6 +238,7 @@ function Sync(parseRDB) {
         state = 'ready'; ++i;
         if(inlineCommandBuffers.length > 0 && inlineCommandBuffers[0][0] === '-'.charCodeAt(0)) {
           // retry sync after a while
+          error(new Error(Buffer.concat(inlineCommandBuffers).toString()));
           reconnect();
         } else {
           that.emit('inlineCommand', inlineCommandBuffers);
@@ -239,14 +260,11 @@ function Sync(parseRDB) {
     }
   }
 
-  if(parseRDB)
-    that.rdb = new rdb.Parser();
-
   function tryConnect() {
-    console.error('tryConnect');
     var connId = Math.random();
     state = 'ready';
     readRDB = false;
+    rdbParser = undefined;
     client = net.connect(port, host);
     client.on('connect', function(a) {
       client.write('sync\r\n');
@@ -256,6 +274,7 @@ function Sync(parseRDB) {
       parse(data);
     });
     client.on('error', function(err) {
+      error(err);
       reconnect();
     });
     client.on('end', function() {
