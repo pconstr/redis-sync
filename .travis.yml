@@ -4,5 +4,5 @@ node_js:
   - 0.8
 before_install:
   - sudo apt-get update
-  - sudo apt-get install libsparsehash-dev
+  - sudo apt-get install libsparsehash-dev redis-server
   - sudo cp libsparsehash.pc /usr/lib/pkgconfig/
