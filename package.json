@@ -14,7 +14,6 @@
   },
   "author": "Carlos Guerreiro <carlos@perceptiveconstructs.com (http://perceptiveconstructs.com)",
   "dependencies": {"rdb-parser": "jmealo/rdb-parser", "bufferjs": "1.1.0"},
-  "devDependencies": {"rawhash": "0.1.6"},
   "licenses": [
     {
       "type": "MIT",
